@@ -40,7 +40,7 @@ type JSONEditorProps = {
 export function JSONEditor(props: JSONEditorProps) {
   return <>
     <FormControl>
-        <InputLabel htmlFor="my-input" shrink variant="standard">Event Data</InputLabel>
+        <InputLabel htmlFor="my-input" shrink variant="standard" required>Event Data</InputLabel>
         <Input id="my-input" aria-describedby="event data" 
           multiline
           inputComponent={Editor}
