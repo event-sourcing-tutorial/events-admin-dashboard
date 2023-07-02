@@ -4,7 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import {Stack} from '@mui/system';
 import {Container, TextField, Typography} from '@mui/material';
-import {parse} from "json5";
+import {parse, stringify} from "json5";
 import {useState} from 'react';
 import {JSONEditor} from './JSONEditor';
 import { EventFetcher } from './EventFetcher';
@@ -44,7 +44,7 @@ function App({client}: {client: EventsApisClientImpl}) {
   );
 }
 
-type JSONState = 
+type JSONState =
   {type: "valid", text: string, json: any} |
   {type: "invalid", text: string, error: string};
 
@@ -73,7 +73,7 @@ function MyApp({client}: {client: EventsApisClientImpl}) {
             id="eventidx"
             label="Event Index"
             type="number"
-            variant='standard' 
+            variant='standard'
             InputLabelProps={{
               shrink: true,
             }}
@@ -87,7 +87,7 @@ function MyApp({client}: {client: EventsApisClientImpl}) {
               setstate(make_state(text));
             }}
           />
-          <Button 
+          <Button
             variant="contained"
             disabled={state.type === "invalid"}
             onClick={() => setstate(make_state("{}"))}
@@ -101,38 +101,42 @@ function MyApp({client}: {client: EventsApisClientImpl}) {
           Event Stream
         </Typography>
         <Stack direction="column" spacing={2}>
-          <Container>Event1</Container>
-          <Container>Event2</Container>
-          <Container>Event3</Container>
-          <Container>Event4</Container>
-        </Stack>
-      </Container>
-      <Container maxWidth="sm" disableGutters>
-        <Typography variant="h2">
-          Event Stream
-        </Typography>
-        <Stack direction="column" spacing={2}>
-          <Container>Event1</Container>
-          <Container>Event2</Container>
-          <Container>Event3</Container>
-          <Container>Event4</Container>
-        </Stack>
-      </Container>
-      <Container maxWidth="sm" disableGutters>
-        <Typography variant="h2">
-          Event Stream
-        </Typography>
-        <Stack direction="column" spacing={2}>
-          <EventFetcher 
+          <EventFetcher
             client={client}
             render = {(events, error) => <>
-              <Container>Event1</Container>
-              <Container>Event2</Container>
-              <Container>Event3</Container>
-              <Container>Event4</Container>
+              {
+                events.map(({idx, inserted, payload}) =>  {
+                   const json = {idx: idx.toString(), inserted: inserted.toISOString(), payload};
+                   return <Container key={idx.toString()}>
+                     <JSONEditor text={JSON.stringify(json, undefined, 2)} error={undefined} onChange={() => {}} />
+                  </Container>
+                })
+              }
             </>
             }
           />
+        </Stack>
+      </Container>
+      <Container maxWidth="sm" disableGutters>
+        <Typography variant="h2">
+          Event Stream
+        </Typography>
+        <Stack direction="column" spacing={2}>
+          <Container>Event1</Container>
+          <Container>Event2</Container>
+          <Container>Event3</Container>
+          <Container>Event4</Container>
+        </Stack>
+      </Container>
+      <Container maxWidth="sm" disableGutters>
+        <Typography variant="h2">
+          Event Stream
+        </Typography>
+        <Stack direction="column" spacing={2}>
+          <Container>Event1</Container>
+          <Container>Event2</Container>
+          <Container>Event3</Container>
+          <Container>Event4</Container>
         </Stack>
       </Container>
     </Stack>
