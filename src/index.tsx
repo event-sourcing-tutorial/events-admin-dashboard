@@ -23,11 +23,3 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-// const fetch = async () => {
-//   console.log("polling ....");
-//   await client.PollEvents({lastIdx: BigInt(0)}).forEach(x => {
-//     console.log(x);
-//   });
-// };
-// 
-// setTimeout(fetch, 100);

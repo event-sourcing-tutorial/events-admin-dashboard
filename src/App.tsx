@@ -4,7 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import {Stack} from '@mui/system';
 import {Container, TextField, Typography} from '@mui/material';
-import {parse, stringify} from "json5";
+import {parse} from "json5";
 import {useState} from 'react';
 import {JSONEditor, JSONViewer} from './JSONEditor';
 import { EventFetcher } from './EventFetcher';
