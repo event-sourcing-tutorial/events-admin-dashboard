@@ -5,12 +5,16 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import {EventsApisClientImpl, GrpcWebImpl} from '@event-sourcing-tutorial/eventsapis-proto';
 
+const url = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+const rpc = new GrpcWebImpl(url, {debug: false});
+const client = new EventsApisClientImpl(rpc);
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <App client={client} />
   </React.StrictMode>
 );
 
@@ -19,24 +23,3 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-const url = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-console.log(`url: ${url}`);
-const rpc = new GrpcWebImpl(url, {debug: false});
-
-const client = new EventsApisClientImpl(rpc);
-
-const fetch = async () => {
-  try {
-    const idx = await client.GetLastIdx({});
-    console.log(idx);
-  } catch (err) {
-    console.error(err);
-  }
-  console.log("polling ....");
-  await client.PollEvents({lastIdx: BigInt(0)}).forEach(x => {
-    console.log(x);
-  });
-
-};
-
-setTimeout(fetch, 100);
