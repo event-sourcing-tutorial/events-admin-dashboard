@@ -33,6 +33,7 @@ const fetch_events_cycle: (client: EventsApisClientImpl, onChange: (last_index: 
     const subscription = stream.subscribe(({idx, inserted, payload}) => {
       if (!inserted) throw new Error("missing inserted date");
       events.unshift({idx, inserted, payload});
+      events.splice(10);
       last_index = idx;
       onChange(idx, events);
     },

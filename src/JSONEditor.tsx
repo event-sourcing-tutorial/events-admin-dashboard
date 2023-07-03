@@ -4,7 +4,20 @@ import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import React from 'react';
 
+export const JSONViewer = (props: {text: string}) => {
+  return <CodeMirror
+    value={props.text}
+    extensions={[json()]}
+    theme="dark"
+    editable={false}
+    basicSetup={{
+      lineNumbers: false,
+    }}
+  />;
+}
+
 const Editor = React.forwardRef((props: InputBaseComponentProps, _ref: any) => {
+  const {disabled} = props;
   return <CodeMirror
     className={props.className}
     onFocus={props.onFocus as any}
@@ -12,7 +25,7 @@ const Editor = React.forwardRef((props: InputBaseComponentProps, _ref: any) => {
     value={props.value}
     extensions={[json()]}
     theme="dark"
-    editable={true}
+    editable={!disabled}
     basicSetup={{
       lineNumbers: true,
     }}
@@ -34,17 +47,20 @@ const Editor = React.forwardRef((props: InputBaseComponentProps, _ref: any) => {
 type JSONEditorProps = {
   text: string,
   error: string | undefined,
+  disabled?: boolean,
   onChange: (text: string) => void,
 };
 
 export function JSONEditor(props: JSONEditorProps) {
+  const {error, disabled} = props;
   return <>
     <FormControl>
-        <InputLabel htmlFor="my-input" shrink variant="standard" required>Event Data</InputLabel>
+        <InputLabel htmlFor="my-input" shrink variant="standard" required error={error !== undefined}>Payload</InputLabel>
         <Input id="my-input" aria-describedby="event data" 
           multiline
           inputComponent={Editor}
           value={props.text}
+          disabled={disabled}
           onChange={e => {
             props.onChange(e.target.value);
           }}

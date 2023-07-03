@@ -6,7 +6,7 @@ import {Stack} from '@mui/system';
 import {Container, TextField, Typography} from '@mui/material';
 import {parse, stringify} from "json5";
 import {useState} from 'react';
-import {JSONEditor} from './JSONEditor';
+import {JSONEditor, JSONViewer} from './JSONEditor';
 import { EventFetcher } from './EventFetcher';
 import {EventsApisClientImpl} from '@event-sourcing-tutorial/eventsapis-proto';
 
@@ -48,7 +48,7 @@ type JSONState =
   {type: "valid", text: string, json: any} |
   {type: "invalid", text: string, error: string};
 
-const make_state: (text: string) => JSONState = (text) => {
+const json_state: (text: string) => JSONState = (text) => {
   try {
     const json = parse(text);
     return {type: "valid", text, json};
@@ -57,43 +57,87 @@ const make_state: (text: string) => JSONState = (text) => {
   }
 }
 
+type SubmitState = {
+  in_progress: boolean;
+  last_error: string | undefined;
+};
+
+const initial_submit_state: SubmitState = {in_progress: false, last_error: undefined};
+
+const initial_json = "{\n  events: [\n    {type: ---, data: {}},\n  ],\n}";
+
 function MyApp({client}: {client: EventsApisClientImpl}) {
-  const [state, setstate] = useState(make_state("{}"));
+  const [json, setjson] = useState(json_state(initial_json));
+  const [index, setindex] = useState(0);
+  const [submitstate, setsubmitstate] = useState(initial_submit_state);
   return <Container>
     <Typography variant="h1">
       Events
     </Typography>
     <Stack direction="row" spacing={2}>
-      <Container maxWidth="sm" disableGutters>
+      <Container maxWidth="sm" fixed disableGutters>
         <Typography variant="h2">
           Insert Event
         </Typography>
         <Stack direction="column" spacing={2}>
           <TextField
             id="eventidx"
-            label="Event Index"
+            label="Index"
             type="number"
             variant='standard'
             InputLabelProps={{
               shrink: true,
             }}
             required
+            error={index === 0}
+            value={index.toString()}
+            disabled={submitstate.in_progress}
+            onChange={(e) => setindex(e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10)))}
           />
           <JSONEditor
-            text={state.text}
-            error={state.type === "invalid" ? state.error : undefined}
+            text={json.text}
+            error={json.type === "invalid" ? json.error : undefined}
+            disabled={submitstate.in_progress}
             onChange={(text) => {
-              console.log(text);
-              setstate(make_state(text));
+              setjson(json_state(text));
             }}
           />
           <Button
             variant="contained"
-            disabled={state.type === "invalid"}
-            onClick={() => setstate(make_state("{}"))}
+            disabled={json.type === "invalid" || index === 0 || submitstate.in_progress}
+            onClick={() => {
+              if (json.type === "valid" && !submitstate.in_progress) {
+                setsubmitstate((state) => ({...state, in_progress: true}));
+                client.InsertEvent({
+                  idx: BigInt(index),
+                  payload: json.json,
+                })
+                .then(({success}) => {
+                  setsubmitstate((_state) => ({
+                    in_progress: false,
+                    last_error: success ? "Success" : "Error: submission failed, index is probably wrong",
+                  }));
+                })
+                .catch(error => {
+                  setsubmitstate((_state) => ({
+                    in_progress: false,
+                    last_error: `Error: ${error.message}`,
+                  }));
+                });
+              }
+            }}
             >
-            Insert Event
+            Insert Payload
           </Button>
+          {
+            submitstate.in_progress 
+            ? <div>Submitting ...</div>
+              : submitstate.last_error === undefined 
+                ? null
+                : <div>
+                    {submitstate.last_error}
+                  </div>
+          }
         </Stack>
       </Container>
       <Container maxWidth="sm" disableGutters>
@@ -107,8 +151,8 @@ function MyApp({client}: {client: EventsApisClientImpl}) {
               {
                 events.map(({idx, inserted, payload}) =>  {
                    const json = {idx: idx.toString(), inserted: inserted.toISOString(), payload};
-                   return <Container key={idx.toString()}>
-                     <JSONEditor text={JSON.stringify(json, undefined, 2)} error={undefined} onChange={() => {}} />
+                   return <Container key={idx.toString()} disableGutters>
+                     <JSONViewer text={JSON.stringify(json, undefined, 2)} />
                   </Container>
                 })
               }
@@ -117,6 +161,7 @@ function MyApp({client}: {client: EventsApisClientImpl}) {
           />
         </Stack>
       </Container>
+      { false &&
       <Container maxWidth="sm" disableGutters>
         <Typography variant="h2">
           Event Stream
@@ -128,6 +173,8 @@ function MyApp({client}: {client: EventsApisClientImpl}) {
           <Container>Event4</Container>
         </Stack>
       </Container>
+      }
+      { false &&
       <Container maxWidth="sm" disableGutters>
         <Typography variant="h2">
           Event Stream
@@ -139,6 +186,7 @@ function MyApp({client}: {client: EventsApisClientImpl}) {
           <Container>Event4</Container>
         </Stack>
       </Container>
+      }
     </Stack>
   </Container>;
 }
