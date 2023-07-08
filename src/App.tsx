@@ -7,6 +7,7 @@ import {JSONViewer} from './JSONEditor';
 import { EventFetcher } from './EventFetcher';
 import {EventsApisClientImpl} from '@event-sourcing-tutorial/eventsapis-proto';
 import {InsertEventContainer} from './InsertEventContainer';
+import {InsertCommandContainer} from './InsertCommandContainer';
 
 const darkTheme = createTheme({
   palette: {
@@ -49,7 +50,8 @@ function MyApp({client}: {client: EventsApisClientImpl}) {
       Events
     </Typography>
     <Stack direction="row" spacing={2}>
-      <Stack direction="column" spacing={2}>
+      <Stack direction="column" width="420px" spacing={2}>
+        <InsertCommandContainer client={client} />
         <InsertEventContainer client={client} />
       </Stack>
       <Container maxWidth="sm" disableGutters>

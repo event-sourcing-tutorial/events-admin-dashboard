@@ -45,18 +45,20 @@ const Editor = React.forwardRef((props: InputBaseComponentProps, _ref: any) => {
 
 
 type JSONEditorProps = {
+  id: string,
   text: string,
+  label: String,
   error: string | undefined,
   disabled?: boolean,
   onChange: (text: string) => void,
 };
 
 export function JSONEditor(props: JSONEditorProps) {
-  const {error, disabled} = props;
+  const {error, disabled, id, label} = props;
   return <>
     <FormControl>
-        <InputLabel htmlFor="my-input" shrink variant="standard" required error={error !== undefined}>Payload</InputLabel>
-        <Input id="my-input" aria-describedby="event data" 
+        <InputLabel htmlFor={id} shrink variant="standard" required error={error !== undefined}>{label}</InputLabel>
+        <Input id={id} aria-describedby="event data" 
           multiline
           inputComponent={Editor}
           value={props.text}
@@ -68,7 +70,7 @@ export function JSONEditor(props: JSONEditorProps) {
         {
           props.error === undefined
             ? null 
-            : <FormHelperText id="my-helper-text" variant="standard" error>
+            : <FormHelperText variant="standard" error>
                 {props.error}
               </FormHelperText>
         }

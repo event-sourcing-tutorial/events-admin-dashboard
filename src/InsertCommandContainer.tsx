@@ -1,10 +1,12 @@
 import Button from '@mui/material/Button';
 import {Stack} from '@mui/system';
-import {Container, TextField, Typography} from '@mui/material';
+import {Container, IconButton, TextField, Typography} from '@mui/material';
 import {parse} from "json5";
 import {useState} from 'react';
 import {JSONEditor} from './JSONEditor';
 import {EventsApisClientImpl} from '@event-sourcing-tutorial/eventsapis-proto';
+import {v4 as uuidv4} from "uuid";
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 type JSONState =
   {type: "valid", text: string, json: any} |
@@ -26,34 +28,55 @@ type SubmitState = {
 
 const initial_submit_state: SubmitState = {in_progress: false, last_error: undefined};
 
-const initial_json = "{\n  events: [\n    {type: ---, data: {}},\n  ],\n}";
+const initial_json = "{\n  \n}";
 
-export const InsertEventContainer = ({client}: {client: EventsApisClientImpl}) => {
+export const InsertCommandContainer = ({client}: {client: EventsApisClientImpl}) => {
   const [json, setjson] = useState(json_state(initial_json));
-  const [index, setindex] = useState(0);
+  const [command_id, set_command_id] = useState(uuidv4());
+  const [command_type, set_command_type] = useState("");
   const [submitstate, setsubmitstate] = useState(initial_submit_state);
   return <Container maxWidth="sm" fixed disableGutters>
     <Typography variant="h2">
-      Insert Event
+      Insert Command
     </Typography>
     <Stack direction="column" spacing={2}>
+      <Stack direction="row">
+        <TextField
+          id="commandid"
+          label="Command ID"
+          type="text"
+          variant='standard'
+          InputLabelProps={{
+            shrink: true,
+          }}
+          required
+          error={command_id.length === 0}
+          value={command_id}
+          disabled={submitstate.in_progress}
+          onChange={(e) => set_command_id(e.target.value)}
+          fullWidth
+        />
+        <IconButton disabled={submitstate.in_progress} onClick={() => set_command_id(uuidv4())}>
+          <RefreshIcon />
+        </IconButton>
+      </Stack>
       <TextField
-        id="eventidx"
-        label="Index"
-        type="number"
+        id="commandtype"
+        label="Command Type"
+        type="text"
         variant='standard'
         InputLabelProps={{
           shrink: true,
         }}
         required
-        error={index === 0}
-        value={index.toString()}
+        error={command_type.length === 0}
+        value={command_type}
         disabled={submitstate.in_progress}
-        onChange={(e) => setindex(e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10)))}
+        onChange={(e) => set_command_type(e.target.value)}
       />
       <JSONEditor
-        id="event_editor"
-        label="Payload"
+        id="command_data"
+        label="Command Data"
         text={json.text}
         error={json.type === "invalid" ? json.error : undefined}
         disabled={submitstate.in_progress}
@@ -63,18 +86,19 @@ export const InsertEventContainer = ({client}: {client: EventsApisClientImpl}) =
       />
       <Button
         variant="contained"
-        disabled={json.type === "invalid" || index === 0 || submitstate.in_progress}
+        disabled={json.type === "invalid" || command_id.length === 0 || command_type.length === 0 || submitstate.in_progress}
         onClick={() => {
           if (json.type === "valid" && !submitstate.in_progress) {
             setsubmitstate((state) => ({...state, in_progress: true}));
-            client.InsertEvent({
-              idx: BigInt(index),
-              payload: json.json,
+            client.IssueCommand({
+              commandId: command_id,
+              commandType: command_type,
+              commandData: json.json,
             })
             .then(({success}) => {
               setsubmitstate((_state) => ({
                 in_progress: false,
-                last_error: success ? "Success" : "Error: submission failed, index is probably wrong",
+                last_error: success ? "Success" : "Error: submission failed, command id is probably wrong",
               }));
             })
             .catch(error => {
@@ -86,7 +110,7 @@ export const InsertEventContainer = ({client}: {client: EventsApisClientImpl}) =
           }
         }}
         >
-        Insert Payload
+        Insert Command
       </Button>
       {
         submitstate.in_progress 
