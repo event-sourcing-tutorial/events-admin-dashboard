@@ -95,10 +95,10 @@ export const InsertCommandContainer = ({client}: {client: EventsApisClientImpl})
               commandType: command_type,
               commandData: json.json,
             })
-            .then(({success}) => {
+            .then(({alreadyExists}) => {
               setsubmitstate((_state) => ({
                 in_progress: false,
-                last_error: success ? "Success" : "Error: submission failed, command id is probably wrong",
+                last_error: alreadyExists ? "Command Already Exists" : "Command Inserted",
               }));
             })
             .catch(error => {
