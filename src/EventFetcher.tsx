@@ -52,7 +52,7 @@ const fetch_events_cycle: (client: EventsApisClientImpl, onChange: (last_index: 
   };
 
   const fetch_index: () => void = () => {
-    client.GetLastIdx({})
+    client.GetEventLastIdx({})
       .then(({lastIdx}) => {
         const idx = lastIdx - BigInt(10);
         start_polling(idx < BigInt(0) ? BigInt(0) : idx);

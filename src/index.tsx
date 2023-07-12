@@ -9,6 +9,10 @@ const url = `${window.location.protocol}//${window.location.hostname}:${window.l
 const rpc = new GrpcWebImpl(url, {debug: false});
 const client = new EventsApisClientImpl(rpc);
 
+client.GetQueue({})
+  .then(x => console.log(x))
+  .catch(err => console.error(err));
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
