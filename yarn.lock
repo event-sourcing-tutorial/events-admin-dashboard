@@ -1525,10 +1525,10 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.43.0.tgz#559ca3d9ddbd6bf907ad524320a0d14b85586af0"
   integrity sha512-s2UHCoiXfxMvmfzqoN+vrQ84ahUSYde9qNO1MdxmoEhyHWsfmwOpFlwYV+ePJEVc7gFnATGUi376WowX1N7tFg==
 
-"@event-sourcing-tutorial/eventsapis-proto@0.0.7":
-  version "0.0.7"
-  resolved "https://npm.pkg.github.com/download/@event-sourcing-tutorial/eventsapis-proto/0.0.7/b93d2ff641756f22312d8551bd729e241efc0cec#b93d2ff641756f22312d8551bd729e241efc0cec"
-  integrity sha512-O3zsh45576ajcl2k6LdBZtC6vgqpLuY4Gy8W5VFwZueqF8tq4Y5fwQjYRm30HGvVHAt9idOjhYaRcKMbwrCm/Q==
+"@event-sourcing-tutorial/eventsapis-proto@0.0.8":
+  version "0.0.8"
+  resolved "https://npm.pkg.github.com/download/@event-sourcing-tutorial/eventsapis-proto/0.0.8/f8d5a8877fb55d61211889503e921cc8d04f1efd#f8d5a8877fb55d61211889503e921cc8d04f1efd"
+  integrity sha512-CZtgwa08fcfYgLlXQPo0ggqNQVRXUM3vI5XwAYFmrK2hKadiRviIVgKgwqJWpbFAYp8H44BUSTRrgEiByGn4Zg==
   dependencies:
     "@improbable-eng/grpc-web" "^0.15.0"
     protobufjs "^7.1.2"
