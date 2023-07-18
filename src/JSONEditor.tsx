@@ -13,6 +13,7 @@ export const JSONViewer = (props: {text: string}) => {
     basicSetup={{
       lineNumbers: false,
     }}
+    maxWidth="420px"
   />;
 }
 

@@ -1,18 +1,12 @@
-import {EventsApisClientImpl} from "@event-sourcing-tutorial/eventsapis-proto";
 import React from "react";
+import {Client, Message} from "./messages";
 
-type Event = {
-  idx: BigInt,
-  inserted: Date,
-  payload: any,
-};
-
-const fetch_events_cycle: (client: EventsApisClientImpl, onChange: (last_index: bigint, events: Event[]) => void) => () => void = (client, onChange) => {
+const fetch_events_cycle = <M extends Message>(client: Client<M>, onChange: (last_index: bigint, events: M[]) => void): (() => void) => {
 
   let stopping = false;
   let stop_subscription = () => {};
 
-  const events: Event[] = [];
+  const events: M[] = [];
 
   const handle_error: (error: Error, k: () => void) => void = (error, k) => {
     if (stopping) {
@@ -29,13 +23,12 @@ const fetch_events_cycle: (client: EventsApisClientImpl, onChange: (last_index: 
 
   const start_polling: (last_index: bigint) => void = (last_index) => {
     console.log("polling ...");
-    const stream = client.PollEvents({lastIdx: last_index});
-    const subscription = stream.subscribe(({idx, inserted, payload}) => {
-      if (!inserted) throw new Error("missing inserted date");
-      events.unshift({idx, inserted, payload});
+    const stream = client.get_stream({lastIdx: last_index});
+    const subscription = stream.subscribe((message) => {
+      events.unshift(message);
       events.splice(10);
-      last_index = idx;
-      onChange(idx, events);
+      last_index = message.idx;
+      onChange(message.idx, events);
     },
     (error) => {
         console.error("ERROR", error);
@@ -52,7 +45,7 @@ const fetch_events_cycle: (client: EventsApisClientImpl, onChange: (last_index: 
   };
 
   const fetch_index: () => void = () => {
-    client.GetEventLastIdx({})
+    client.get_last_index()
       .then(({lastIdx}) => {
         const idx = lastIdx - BigInt(10);
         start_polling(idx < BigInt(0) ? BigInt(0) : idx);
@@ -72,21 +65,21 @@ const fetch_events_cycle: (client: EventsApisClientImpl, onChange: (last_index: 
   return stop;
 }
 
-type Props = {
-  client: EventsApisClientImpl,
-  render: (events: Event[], error: string | undefined) => React.ReactElement,
+type Props<M> = {
+  client: Client<M>,
+  render: (events: M[], error: string | undefined) => React.ReactElement,
 };
 
-type State = {
+type State<M> = {
   last_index: BigInt | undefined;
-  events: Event[];
+  events: M[];
   error: string | undefined;
 };
 
 
-export class EventFetcher extends React.Component<Props, State> {
+export class EventFetcher<M extends Message> extends React.Component<Props<M>, State<M>> {
   stop: () => void = () => {};
-  constructor(props: Props) {
+  constructor(props: Props<M>) {
     super(props);
     this.state = {last_index: undefined, events: [], error: undefined};
   }
