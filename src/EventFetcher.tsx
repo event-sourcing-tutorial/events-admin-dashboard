@@ -25,8 +25,7 @@ const fetch_events_cycle = <M extends Message>(client: Client<M>, onChange: (las
     console.log("polling ...");
     const stream = client.get_stream({lastIdx: last_index});
     const subscription = stream.subscribe((message, idx) => {
-      events.unshift(message);
-      events.splice(10);
+      events = client.reduce(events, message);
       last_index = idx;
       onChange(idx, events);
     },

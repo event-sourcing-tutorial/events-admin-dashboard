@@ -12,6 +12,7 @@ export type Observable<M> = {
 export type Client<M> = {
   get_intial_state: () => Promise<{lastIdx: bigint, messages: M[]}>;
   get_stream: (args: {lastIdx: bigint}) => Observable<M>,
+  reduce: (events: M[], message: M) => M[],
 };
 
 export type Message = {
@@ -43,6 +44,11 @@ export const make_events_client: (client: EventsApisClientImpl) => Client<Event>
         }, onerror, ondone);
       }
     };
+  },
+  reduce: (events, message) => {
+    events.unshift(message);
+    events.splice(10);
+    return events;
   },
 });
 
@@ -103,5 +109,32 @@ export const make_queue_client: (client: EventsApisClientImpl) => Client<QueueCo
         }, onerror, ondone);
       }
     };
+  },
+  reduce: (events, message) => {
+    switch (message.status) {
+      case "issued": {
+        events.unshift(message);
+        return events;
+      }
+      case "finalized": {
+        events = events.map(x => x.command_id === message.command_id
+          ? ({...x, status: "finalized", updated: message.updated, idx: message.idx})
+          : x);
+        const finals = events
+          .map((x, i) => ({status: x.status, idx: x.idx, i}))
+          .filter((x) => x.status === "finalized")
+          .sort((a, b) => a.idx < b.idx ? +1 : -1)
+          .slice(10)
+          .map(x => x.i)
+          .sort()
+          .reverse();
+        finals.forEach(i => events.splice(i, 1));
+        return events;
+      }
+      default: {
+        const invalid: never = message.status;
+        throw invalid;
+      }
+    }
   },
 });
