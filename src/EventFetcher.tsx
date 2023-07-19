@@ -22,7 +22,7 @@ const fetch_events_cycle = <M extends Message>(client: Client<M>, onChange: (las
   };
 
   const start_polling: (last_index: bigint) => void = (last_index) => {
-    console.log("polling ...");
+    console.log(`polling ... ${last_index}`);
     const stream = client.get_stream({lastIdx: last_index});
     const subscription = stream.subscribe((message, idx) => {
       events = client.reduce(events, message);

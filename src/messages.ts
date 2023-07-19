@@ -78,11 +78,11 @@ export const make_queue_client: (client: EventsApisClientImpl) => Client<QueueCo
                   command_id: commandId,
                   command_type: commandType,
                   command_data: commandData,
-                  status: "issued",
+                  status: "issued" as const,
                   updated: inserted,
-                  
                 };
-              }),
+              })
+              .sort((a, b) => b.updated.getTime() - a.updated.getTime()),
             };
           })),
   get_stream: ({lastIdx}) => {
