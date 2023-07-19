@@ -6,7 +6,7 @@ const fetch_events_cycle = <M extends Message>(client: Client<M>, onChange: (las
   let stopping = false;
   let stop_subscription = () => {};
 
-  const events: M[] = [];
+  let events: M[] = [];
 
   const handle_error: (error: Error, k: () => void) => void = (error, k) => {
     if (stopping) {
@@ -22,13 +22,12 @@ const fetch_events_cycle = <M extends Message>(client: Client<M>, onChange: (las
   };
 
   const start_polling: (last_index: bigint) => void = (last_index) => {
-    console.log("polling ...");
+    console.log(`polling ... ${last_index}`);
     const stream = client.get_stream({lastIdx: last_index});
-    const subscription = stream.subscribe((message) => {
-      events.unshift(message);
-      events.splice(10);
-      last_index = message.idx;
-      onChange(message.idx, events);
+    const subscription = stream.subscribe((message, idx) => {
+      events = client.reduce(events, message);
+      last_index = idx;
+      onChange(idx, events);
     },
     (error) => {
         console.error("ERROR", error);
@@ -45,10 +44,11 @@ const fetch_events_cycle = <M extends Message>(client: Client<M>, onChange: (las
   };
 
   const fetch_index: () => void = () => {
-    client.get_last_index()
-      .then(({lastIdx}) => {
-        const idx = lastIdx - BigInt(10);
-        start_polling(idx < BigInt(0) ? BigInt(0) : idx);
+    client.get_intial_state()
+      .then(({lastIdx, messages}) => {
+        events = messages;
+        onChange(lastIdx, messages);
+        start_polling(lastIdx);
       })
       .catch(error => {
         handle_error(error, fetch_index);

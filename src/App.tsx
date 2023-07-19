@@ -85,14 +85,15 @@ function MyApp({client, events_client, queue_client}: {client: EventsApisClientI
             client={queue_client}
             render = {(events, error) => <>
               {
-                events.map(({idx, command_id, status, updated}) =>  {
+                events.map(({command_id, command_type, command_data, status, updated}) =>  {
                   const json = {
-                      idx: idx.toString(),
                       command_id,
+                      command_type,
+                      command_data,
                       updated: updated.toISOString(),
                       status,
                   };
-                  return <Container key={idx.toString()} disableGutters>
+                  return <Container key={command_id} disableGutters>
                     <JSONViewer text={JSON.stringify(json, undefined, 2)} />
                   </Container>
                 })
